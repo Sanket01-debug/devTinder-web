@@ -9,6 +9,7 @@ const Login = () => {
 
   const [emailId, setEmailId] = useState("sanketkansal2001@gmail.com");
   const [password, setPassword] = useState("Sanket@123");
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -23,8 +24,8 @@ const Login = () => {
       dispatch(addUser(res.data));
       return navigate("/");
     } catch (err) {
-      console.error(err);
-    }
+      setError(err?.response?.data || "Something went wrong");  
+    }  
   };
 
   return (
@@ -62,8 +63,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
-
+          <p className="text-red-500">{error}</p>
           <div className="card-actions justify-center mt-6">
             <button
               className="btn w-full bg-blue-600 hover:bg-blue-700 text-white border-none"
