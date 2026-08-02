@@ -30,7 +30,9 @@
 - New Page - See all my connections
 - New Page - See all my Conenction Requests
 - Feature - Accept/Reject connection request
-
+- Send/Ignore the user card from the feed 
+- Signup New User 
+- E2E testing
 
 Body 
     NavBar
