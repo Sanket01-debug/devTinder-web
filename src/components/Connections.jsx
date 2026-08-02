@@ -48,17 +48,15 @@ const Connections = () => {
                                 src={photoUrl}
                             />
                         </div>
-                        <div className="text-left mx-4 flex-1 ">
+                        <div className="text-left mx-4 ">
                             <h2 className="font-bold text-xl">
                                 {firstName + " " + lastName}
                             </h2>
                             {age && gender && <p>{age + ", " + gender}</p>}
                             <p>{about}</p>
                         </div>
-                        <Link to={"/chat/" + _id} className="ml-auto flex items-center">
-                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                                Chat
-                            </button>
+                        <Link to={"/chat/" + _id}>
+                            <button className="btn btn-primary">Chat</button>
                         </Link>
                     </div>
                 );
