@@ -69,3 +69,26 @@ Body
         - config nginx - /etc/nginx/sites-available/default
         - restart nginx - sudo systemctl restart nginx
         - Modify the BASEURL in frontend project to "/api"
+
+# Ngxinx config: 
+
+        Frontend = http://15.206.165.64/
+        Backend = http://15.206.165.64:7777/
+    
+        Domain name = devtinder.com => 15.206.165.64
+
+        Frontend = devtinder.com
+        Backend = devtinder.com:7777 => devtinder.com/api
+
+        nginx config : 
+
+        server_name 15.206.165.64;
+
+        location /api/ {
+            proxy_pass http://localhost:7777/;  # Pass the request to the Node.js app
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade;
+        }
