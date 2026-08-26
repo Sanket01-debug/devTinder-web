@@ -101,3 +101,5 @@ Body
     - wait for sometime till your nameservers are updated ~15 minutes
     - DNS record: A devtinder.in 15.206.165.64
     - Enable SSL for website 
+
+    
