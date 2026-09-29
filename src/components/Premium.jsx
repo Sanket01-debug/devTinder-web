@@ -76,7 +76,7 @@ const Premium = () => {
           </ul>
 
           <button
-            onClick={() => handleBuyClick("gold")}
+            onClick={() => handleBuyClick("silver")}
             className="btn btn-secondary"
           >
             Buy Silver
