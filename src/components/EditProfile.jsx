@@ -4,140 +4,127 @@ import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
-
-const EditProfile = ({ user }) => {
-    const [firstName, setFirstName] = useState(user.firstName);
-    const [lastName, setLastName] = useState(user.lastName);
-    const [photoUrl, setPhotoUrl] = useState(user.photoUrl);
-    const [age, setAge] = useState(user.age || "");
-    const [gender, setGender] = useState(user.gender || "");
-    const [about, setAbout] = useState(user.about || "");
-    const [error, setError] = useState("");
-    const dispatch = useDispatch();
-    const [showToast, setShowToast] = useState(false);
-
-    const saveProfile = async () => {
-        //Clear Errors
-        setError("");
-        try {
-            const res = await axios.patch(
-                BASE_URL + "/profile/edit",
-                {
-                    firstName,
-                    lastName,
-                    photoUrl,
-                    age,
-                    gender,
-                    about,
-                },
-                { withCredentials: true }
-            );
-            dispatch(addUser(res?.data?.data));
-            setShowToast(true);
-            setTimeout(() => {
-                setShowToast(false);
-            }, 3000);
-        } catch (err) {
-            setError(err.response.data);
-        }
-    };
-
-    return (
-        <>
-            <div className="flex justify-center my-10">
-                <div className="flex justify-center mx-10">
-                    <div className="card bg-base-300 w-96 shadow-xl">
-                        <div className="card-body">
-                            <h2 className="card-title justify-center">Edit Profile</h2>
-                            <div>
-                                <label className="form-control w-full max-w-xs my-2">
-                                    <div className="label">
-                                        <span className="label-text">First Name:</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={firstName}
-                                        className="input input-bordered w-full max-w-xs"
-                                        onChange={(e) => setFirstName(e.target.value)}
-                                    />
-                                </label>
-                                <label className="form-control w-full max-w-xs my-2">
-                                    <label className="form-control w-full max-w-xs my-2">
-                                        <div className="label">
-                                            <span className="label-text">Last Name:</span>
-                                        </div>
-                                        <input
-                                            type="text"
-                                            value={lastName}
-                                            className="input input-bordered w-full max-w-xs"
-                                            onChange={(e) => setLastName(e.target.value)}
-                                        />
-                                    </label>
-                                    <div className="label">
-                                        <span className="label-text">Photo URL :</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={photoUrl}
-                                        className="input input-bordered w-full max-w-xs"
-                                        onChange={(e) => setPhotoUrl(e.target.value)}
-                                    />
-                                </label>
-                                <label className="form-control w-full max-w-xs my-2">
-                                    <div className="label">
-                                        <span className="label-text">Age:</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={age}
-                                        className="input input-bordered w-full max-w-xs"
-                                        onChange={(e) => setAge(e.target.value)}
-                                    />
-                                </label>
-                                <label className="form-control w-full max-w-xs my-2">
-                                    <div className="label">
-                                        <span className="label-text">Gender:</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={gender}
-                                        className="input input-bordered w-full max-w-xs"
-                                        onChange={(e) => setGender(e.target.value)}
-                                    />
-                                </label>
-                                <label className="form-control w-full max-w-xs my-2">
-                                    <div className="label">
-                                        <span className="label-text">About:</span>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={about}
-                                        className="input input-bordered w-full max-w-xs"
-                                        onChange={(e) => setAbout(e.target.value)}
-                                    />
-                                </label>
-                            </div>
-                            <p className="text-red-500">{error}</p>
-                            <div className="card-actions justify-center m-2">
-                                <button className="btn btn-primary" onClick={saveProfile}>
-                                    Save Profile
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <UserCard
-                    user={{ firstName, lastName, photoUrl, age, gender, about }}
-                />
-            </div>
-            {showToast && (
-                <div className="toast toast-top toast-center">
-                    <div className="alert alert-success">
-                        <span>Profile saved successfully.</span>
-                    </div>
-                </div>
-            )}
-        </>
-    );
-};
-export default EditProfile;
+import { PageHeader } from "./UI";
+import { errorMessage } from "../utils/errorMessage";
+export default function EditProfile({ user }) {
+  const [fields, setFields] = useState({
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    photoUrl: user.photoUrl || "",
+    age: user.age || "",
+    gender: user.gender || "",
+    about: user.about || "",
+  });
+  const [error, setError] = useState("");
+  const [saved, setSaved] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const dispatch = useDispatch();
+  const update = (name, value) => {
+    setFields({ ...fields, [name]: value });
+    setSaved(false);
+  };
+  const save = async (event) => {
+    event.preventDefault();
+    setError("");
+    setSaved(false);
+    setBusy(true);
+    try {
+      const { data } = await axios.patch(
+        BASE_URL + "/profile/edit",
+        {
+          ...fields,
+          age: fields.age === "" ? undefined : Number(fields.age),
+          gender: fields.gender || undefined,
+          photoUrl: fields.photoUrl || undefined,
+        },
+        { withCredentials: true },
+      );
+      dispatch(addUser(data.data));
+      setSaved(true);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const field = (name, label, type = "text") => (
+    <label className="field">
+      <span>{label}</span>
+      <input
+        type={type}
+        value={fields[name]}
+        required={name === "firstName" || name === "lastName"}
+        min={name === "age" ? 18 : undefined}
+        max={name === "age" ? 120 : undefined}
+        onChange={(event) => update(name, event.target.value)}
+      />
+    </label>
+  );
+  return (
+    <div className="page-container">
+      <PageHeader
+        eyebrow="MAKE A GREAT FIRST IMPRESSION"
+        title="A little more you."
+        description="Give your future connections a glimpse of the person behind the code."
+      />
+      <div className="profile-layout">
+        <form className="surface profile-form" onSubmit={save}>
+          <h2>Your details</h2>
+          <p className="muted">Make it personal. Make it yours.</p>
+          <div className="field-grid">
+            {field("firstName", "First name")}
+            {field("lastName", "Last name")}
+          </div>
+          {field("photoUrl", "Profile photo URL", "url")}
+          <p className="field-help">
+            Use a public image URL for your profile photo.
+          </p>
+          <div className="field-grid">
+            {field("age", "Age", "number")}
+            <label className="field">
+              <span>Gender</span>
+              <select
+                value={fields.gender}
+                onChange={(event) => update("gender", event.target.value)}
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+          </div>
+          <label className="field">
+            <span>About you</span>
+            <textarea
+              rows={5}
+              value={fields.about}
+              onChange={(event) => update("about", event.target.value)}
+              placeholder="What are you building? What gets you curious?"
+            />
+          </label>
+          {error && (
+            <p className="error-text" role="alert">
+              {error}
+            </p>
+          )}
+          {saved && (
+            <p className="success-text" role="status">
+              ✓ Your profile has been saved.
+            </p>
+          )}
+          <div className="form-bottom">
+            <span className="muted">Looking good. Ready to connect?</span>
+            <button className="btn btn-primary" disabled={busy}>
+              {busy ? "Saving…" : "Save changes"}
+            </button>
+          </div>
+        </form>
+        <aside className="profile-preview">
+          <p className="eyebrow">HOW OTHERS SEE YOU</p>
+          <UserCard user={{ ...user, ...fields }} preview />
+        </aside>
+      </div>
+    </div>
+  );
+}

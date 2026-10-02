@@ -1,130 +1,166 @@
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useEffect, useState } from "react";
-
-const fetchPremiumStatus = async () => {
-  try {
-    const res = await axios.get(BASE_URL + "/premium/verify", {
-      withCredentials: true,
-    });
-    return !!res.data.isPremium;
-  } catch (err) {
-    console.error("Premium verify failed:", err);
-    return false;
-  }
-};
-
-const Premium = () => {
-  const [isUserPremium, setIsUserPremium] = useState(null); // null = loading
-
+import { EmptyState, Loading, PageHeader } from "./UI";
+import { errorMessage } from "../utils/errorMessage";
+export default function Premium() {
+  const [premium, setPremium] = useState(null);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(null);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    let ignore = false;
-
-    fetchPremiumStatus().then((status) => {
-      if (!ignore) setIsUserPremium(status);
-    });
-
+    let active = true;
+    axios
+      .get(BASE_URL + "/premium/verify", { withCredentials: true })
+      .then(({ data }) => {
+        if (active) setPremium(!!data.isPremium);
+      })
+      .catch((err) => {
+        if (active) setError(errorMessage(err));
+      });
     return () => {
-      ignore = true;
+      active = false;
     };
-  }, []);
-
-  // Payment ke baad dobara check karne ke liye
-  const refreshPremiumStatus = async () => {
-    setIsUserPremium(await fetchPremiumStatus());
-  };
-
-  const handleBuyClick = async (type) => {
+  }, [retry]);
+  const buy = async (type) => {
+    setError("");
+    setBusy(type);
     try {
-      if (!window.Razorpay) {
-        alert("Payment service load nahi hua. Page refresh karke try karo.");
-        return;
-      }
-
-      const order = await axios.post(
+      if (!window.Razorpay)
+        throw new Error(
+          "Payment service is unavailable. Refresh the page and try again.",
+        );
+      const { data } = await axios.post(
         BASE_URL + "/payment/create",
         { membershipType: type },
-        { withCredentials: true }
+        { withCredentials: true },
       );
-
-      const { amount, keyId, currency, notes, orderId } = order.data;
-
-      const options = {
-        key: keyId,
-        amount,
-        currency,
-        name: "Dev Tinder",
-        description: "Connect to other developers",
-        order_id: orderId,
+      const checkout = new window.Razorpay({
+        key: data.keyId,
+        amount: data.amount,
+        currency: data.currency,
+        name: "DevTinder",
+        description: type + " membership",
+        order_id: data.orderId,
         prefill: {
-          name: notes.firstName + " " + notes.lastName,
-          email: notes.emailId,
+          name: data.notes.firstName + " " + data.notes.lastName,
+          email: data.notes.emailId,
         },
-        theme: {
-          color: "#F37254",
+        theme: { color: "#176b50" },
+        handler: async () => {
+          try {
+            const { data: status } = await axios.get(
+              BASE_URL + "/premium/verify",
+              { withCredentials: true },
+            );
+            setPremium(!!status.isPremium);
+            if (!status.isPremium)
+              setError(
+                "Payment received. Membership activation may take a moment. Refresh to check your status.",
+              );
+          } catch (err) {
+            setError(errorMessage(err));
+          }
         },
-        handler: refreshPremiumStatus,
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+        modal: { ondismiss: () => setBusy(null) },
+      });
+      checkout.on("payment.failed", () => {
+        setError("Payment failed. Please try again.");
+        setBusy(null);
+      });
+      checkout.open();
     } catch (err) {
-      console.error("Payment init failed:", err);
-      alert("Kuch galat ho gaya, dobara try karo.");
+      setError(err.response ? errorMessage(err) : err.message);
+    } finally {
+      setBusy(null);
     }
   };
-
-  if (isUserPremium === null) {
-    return <div className="m-10 text-center">Loading...</div>;
-  }
-
-  if (isUserPremium) {
-    return (
-      <div className="m-10 text-center text-xl font-semibold">
-        You are already a premium user 🎉
-      </div>
-    );
-  }
-
   return (
-    <div className="m-10">
-      <div className="flex w-full">
-        <div className="card bg-base-300 rounded-box grid h-80 flex-grow place-items-center">
-          <h1 className="font-bold text-3xl">Silver Membership</h1>
-          <ul>
-            <li> - Chat with other people</li>
-            <li> - 100 connection requests per day</li>
-            <li> - Blue Tick</li>
-            <li> - 3 months</li>
-          </ul>
-          <button
-            onClick={() => handleBuyClick("silver")}
-            className="btn btn-secondary"
-          >
-            Buy Silver
-          </button>
+    <div className="page-container premium-page">
+      <PageHeader
+        eyebrow="MORE ROOM FOR POSSIBILITY"
+        title="Invest in your next chapter."
+        description="Make more connections and keep meaningful conversations going."
+      />
+      {error && (
+        <div className="error-banner" role="alert">
+          {error}
+          {premium === null && (
+            <button
+              onClick={() => {
+                setError("");
+                setRetry(retry + 1);
+              }}
+            >
+              Try again
+            </button>
+          )}
         </div>
-
-        <div className="divider divider-horizontal">OR</div>
-
-        <div className="card bg-base-300 rounded-box grid h-80 flex-grow place-items-center">
-          <h1 className="font-bold text-3xl">Gold Membership</h1>
-          <ul>
-            <li> - Chat with other people</li>
-            <li> - Infinite connection requests per day</li>
-            <li> - Blue Tick</li>
-            <li> - 6 months</li>
-          </ul>
-          <button
-            onClick={() => handleBuyClick("gold")}
-            className="btn btn-primary"
-          >
-            Buy Gold
-          </button>
+      )}
+      {premium === null ? (
+        error ? null : (
+          <Loading />
+        )
+      ) : premium ? (
+        <EmptyState
+          title="You’re part of something special."
+          description="Your premium membership is active. Explore the community and make your next connection."
+        />
+      ) : (
+        <div className="plans-grid">
+          {[
+            {
+              type: "silver",
+              name: "Silver",
+              duration: "3 months",
+              limit: "100 connection requests per day",
+              subtitle: "A little more room to explore.",
+            },
+            {
+              type: "gold",
+              name: "Gold",
+              duration: "6 months",
+              limit: "Unlimited connection requests",
+              subtitle: "Go all in on your next big possibility.",
+            },
+          ].map((plan) => (
+            <article className={`plan-card ${plan.type}`} key={plan.type}>
+              <div className="plan-top">
+                <span className="plan-symbol">✦</span>
+                <span className="count-pill">{plan.duration}</span>
+              </div>
+              <h2>{plan.name}</h2>
+              <p className="muted">{plan.subtitle}</p>
+              <div className="panel-divider" />
+              <ul>
+                {[
+                  "Chat with other developers",
+                  plan.limit,
+                  "Premium profile badge",
+                  plan.duration + " of membership",
+                ].map((feature) => (
+                  <li key={feature}>
+                    <span>✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <button
+                className={`btn ${plan.type === "gold" ? "btn-primary" : "btn-outline"} full-width`}
+                disabled={busy !== null}
+                onClick={() => buy(plan.type)}
+              >
+                {busy === plan.type
+                  ? "Opening checkout…"
+                  : "Choose " + plan.name + " →"}
+              </button>
+              <p className="plan-note">
+                View the price in secure checkout before paying.
+              </p>
+            </article>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
-};
-
-export default Premium;
+}

@@ -4,126 +4,155 @@ import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
-
-const Login = () => {
-  const [emailId, setEmailId] = useState("");
-  const [password, setPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [isLoginForm, setIsLoginForm] = useState(true);
+import { errorMessage } from "../utils/errorMessage";
+export default function Login() {
+  const [fields, setFields] = useState({
+    firstName: "",
+    lastName: "",
+    emailId: "",
+    password: "",
+  });
+  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  const handleLogin = async () => {
+  const submit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setBusy(true);
     try {
-      const res = await axios.post(
-        BASE_URL + "/login",
-        {
-          emailId,
-          password,
-        },
-        { withCredentials: true }
+      const { data } = await axios.post(
+        BASE_URL + (isLogin ? "/login" : "/signup"),
+        isLogin
+          ? { emailId: fields.emailId, password: fields.password }
+          : fields,
+        { withCredentials: true },
       );
-      dispatch(addUser(res.data));
-      return navigate("/");
+      dispatch(addUser(isLogin ? data : data.data));
+      navigate(isLogin ? "/" : "/profile");
     } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
+      setError(errorMessage(err));
+    } finally {
+      setBusy(false);
     }
   };
-
-  const handleSignUp = async () => {
-    try {
-      const res = await axios.post(
-        BASE_URL + "/signup",
-        { firstName, lastName, emailId, password },
-        { withCredentials: true }
-      );
-      dispatch(addUser(res.data.data));
-      return navigate("/profile");
-    } catch (err) {
-      setError(err?.response?.data || "Something went wrong");
-    }
-  };
-
+  const field = (name, label, type = "text", placeholder = "") => (
+    <label className="field">
+      <span>{label}</span>
+      <input
+        required
+        type={type}
+        autoComplete={
+          name === "password"
+            ? isLogin
+              ? "current-password"
+              : "new-password"
+            : name === "emailId"
+              ? "email"
+              : name === "firstName"
+                ? "given-name"
+                : "family-name"
+        }
+        value={fields[name]}
+        placeholder={placeholder}
+        onChange={(event) =>
+          setFields({ ...fields, [name]: event.target.value })
+        }
+      />
+    </label>
+  );
   return (
-    <div className="flex justify-center my-10">
-      <div className="card bg-base-300 w-96 shadow-xl">
-        <div className="card-body">
-          <h2 className="card-title justify-center">
-            {isLoginForm ? "Login" : "Sign Up"}
-          </h2>
-          <div>
-            {!isLoginForm && (
-              <>
-                <label className="form-control w-full max-w-xs my-2">
-                  <div className="label">
-                    <span className="label-text">First Name</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={firstName}
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
-                </label>
-                <label className="form-control w-full max-w-xs my-2">
-                  <div className="label">
-                    <span className="label-text">Last Name</span>
-                  </div>
-                  <input
-                    type="text"
-                    value={lastName}
-                    className="input input-bordered w-full max-w-xs"
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
-                </label>
-              </>
-            )}
-            <label className="form-control w-full max-w-xs my-2">
-              <div className="label">
-                <span className="label-text">Email ID:</span>
-              </div>
-              <input
-                type="text"
-                value={emailId}
-                className="input input-bordered w-full max-w-xs"
-                onChange={(e) => setEmailId(e.target.value)}
-              />
-            </label>
-            <label className="form-control w-full max-w-xs my-2">
-              <div className="label">
-                <span className="label-text">Password</span>
-              </div>
-              <input
-                type="password"
-                value={password}
-                className="input input-bordered w-full max-w-xs"
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </label>
+    <div className="auth-layout">
+      <section className="auth-story">
+        <p className="eyebrow">YOUR NEXT CHAPTER STARTS WITH A CONNECTION</p>
+        <h1>
+          Find your people.
+          <br />
+          Build something <span>great.</span>
+        </h1>
+        <p className="story-description">
+          Meet developers who share your curiosity. Find a collaborator, a fresh
+          perspective, or your next big idea.
+        </p>
+        <div className="code-window">
+          <div className="window-bar">
+            <i />
+            <i />
+            <i />
+            <span>possibilities.js</span>
           </div>
-          <p className="text-red-500">{error}</p>
-          <div className="card-actions justify-center m-2">
-            <button
-              className="btn btn-primary"
-              onClick={isLoginForm ? handleLogin : handleSignUp}
-            >
-              {isLoginForm ? "Login" : "Sign Up"}
-            </button>
+          <pre>
+            <span className="code-comment">
+              // Great things start with a hello
+            </span>
+            {"\n"}
+            <span className="code-purple">const</span>
+            {" connection = {\n  curiosity: "}
+            <span className="code-green">"endless"</span>
+            {",\n  ideas: "}
+            <span className="code-green">"better together"</span>
+            {",\n  nextChapter: "}
+            <span className="code-green">"yours to build"</span>
+            {"\n};"}
+          </pre>
+          <div className="code-bottom">
+            <span className="status-dot" /> Ready to connect
           </div>
-
-          <p
-            className="m-auto cursor-pointer py-2"
-            onClick={() => setIsLoginForm((value) => !value)}
-          >
-            {isLoginForm
-              ? "New User? Signup Here"
-              : "Existing User? Login Here"}
+        </div>
+        <div className="story-bottom">
+          <span>&lt;/&gt;</span>
+          <p>
+            A little less scrolling.
+            <br />
+            <strong>A lot more possibility.</strong>
           </p>
         </div>
-      </div>
+      </section>
+      <section className="auth-card">
+        <p className="eyebrow">WELCOME TO DEVTINDER</p>
+        <h2>
+          {isLogin ? "Good to see you again." : "Let’s get you connected."}
+        </h2>
+        <p className="muted">
+          {isLogin
+            ? "Sign in to find your next great connection."
+            : "Create your account and meet your community."}
+        </p>
+        <form onSubmit={submit}>
+          {!isLogin && (
+            <div className="field-grid">
+              {field("firstName", "First name")}
+              {field("lastName", "Last name")}
+            </div>
+          )}
+          {field("emailId", "Email address", "email", "you@example.com")}
+          {field("password", "Password", "password", "Enter your password")}
+          {error && (
+            <p className="error-text" role="alert">
+              {error}
+            </p>
+          )}
+          <button className="btn btn-primary full-width" disabled={busy}>
+            {busy ? "Please wait…" : isLogin ? "Sign in →" : "Create account →"}
+          </button>
+        </form>
+        <div className="auth-switch">
+          {isLogin ? "New around here?" : "Already have an account?"}{" "}
+          <button
+            disabled={busy}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError("");
+            }}
+          >
+            {isLogin ? "Join the community" : "Sign in"}
+          </button>
+        </div>
+        <p className="auth-note">
+          Your next meaningful connection is one hello away.
+        </p>
+      </section>
     </div>
   );
-};
-export default Login;
+}

@@ -1,15 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { createSocketConnection } from "../utils/socket";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
+import { Avatar, Loading } from "./UI";
+import { errorMessage } from "../utils/errorMessage";
 
 const Chat = () => {
   const { targetUserId } = useParams();
+  const location = useLocation();
+  const person = location.state?.person;
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const bottomRef = useRef(null);
 
   const socketRef = useRef(null);
 
@@ -39,10 +47,12 @@ const Chat = () => {
         }));
 
         setMessages(chatMessages);
+        setLoaded(true);
       })
       .catch((error) => {
         if (!ignore) {
           console.error("Failed to fetch messages:", error);
+          setError(errorMessage(error));
         }
       });
 
@@ -59,6 +69,7 @@ const Chat = () => {
     socketRef.current = socket;
 
     const joinChat = () => {
+      setConnected(true);
       socket.emit("joinChat", {
         firstName,
         userId,
@@ -66,12 +77,7 @@ const Chat = () => {
       });
     };
 
-    const receiveMessage = ({
-      senderId,
-      firstName,
-      lastName,
-      text,
-    }) => {
+    const receiveMessage = ({ senderId, firstName, lastName, text }) => {
       setMessages((previousMessages) => [
         ...previousMessages,
         { senderId, firstName, lastName, text },
@@ -79,6 +85,9 @@ const Chat = () => {
     };
 
     socket.on("connect", joinChat);
+    const disconnected = () => setConnected(false);
+    socket.on("disconnect", disconnected);
+    socket.on("connect_error", disconnected);
     socket.on("messageReceived", receiveMessage);
 
     if (socket.connected) {
@@ -87,6 +96,8 @@ const Chat = () => {
 
     return () => {
       socket.off("connect", joinChat);
+      socket.off("disconnect", disconnected);
+      socket.off("connect_error", disconnected);
       socket.off("messageReceived", receiveMessage);
       socket.disconnect();
 
@@ -95,6 +106,10 @@ const Chat = () => {
       }
     };
   }, [userId, targetUserId, firstName]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+  }, [messages]);
 
   const sendMessage = (event) => {
     event.preventDefault();
@@ -116,51 +131,85 @@ const Chat = () => {
   };
 
   if (!userId) {
-    return <p className="p-5 text-center">Loading user...</p>;
+    return <Loading />;
   }
 
   return (
-    <div className="w-3/4 mx-auto border border-gray-600 m-5 h-[70vh] flex flex-col">
-      <h1 className="p-5 border-b border-gray-600">Chat</h1>
-
-      <div className="flex-1 overflow-y-auto p-5">
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            className={`chat ${
-              msg.senderId === userId ? "chat-end" : "chat-start"
-            }`}
+    <div className="page-container chat-page">
+      <div className="chat-panel">
+        <header className="chat-top">
+          <Link
+            className="chat-back"
+            to="/connections"
+            aria-label="Back to connections"
           >
-            <div className="chat-header">
-              {`${msg.firstName ?? ""} ${msg.lastName ?? ""}`}
-            </div>
-
-            <div className="chat-bubble">{msg.text}</div>
+            ←
+          </Link>
+          <Avatar user={person} />
+          <div>
+            <h2>
+              {person
+                ? person.firstName + " " + (person.lastName || "")
+                : "Your conversation"}
+            </h2>
+            <p className="muted">
+              {connected ? "Connected to chat" : "Connecting to chat…"}
+            </p>
           </div>
-        ))}
+        </header>
+        {error && (
+          <p className="chat-notice" role="alert">
+            {error}
+          </p>
+        )}
+
+        <div className="chat-messages" role="log" aria-label="Conversation">
+          {!loaded && !error && <Loading />}
+          {loaded && !messages.length && (
+            <div className="empty-state">
+              <h2>Start with a hello.</h2>
+              <p className="muted">
+                Ask what they’re building, share an idea, or simply introduce
+                yourself.
+              </p>
+            </div>
+          )}
+          {messages.map((msg, index) => (
+            <div
+              key={index}
+              className={`chat ${
+                msg.senderId === userId ? "chat-end" : "chat-start"
+              }`}
+            >
+              <div className="chat-header">
+                {`${msg.firstName ?? ""} ${msg.lastName ?? ""}`}
+              </div>
+
+              <div className="chat-bubble">{msg.text}</div>
+            </div>
+          ))}
+          <div ref={bottomRef} />
+        </div>
+
+        <form onSubmit={sendMessage} className="chat-compose">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(event) => setNewMessage(event.target.value)}
+            placeholder="Type a message..."
+            aria-label="Message"
+            className="message-input"
+          />
+
+          <button
+            type="submit"
+            disabled={!newMessage.trim() || !connected}
+            className="btn btn-primary"
+          >
+            Send ↗
+          </button>
+        </form>
       </div>
-
-      <form
-        onSubmit={sendMessage}
-        className="p-5 border-t border-gray-600 flex items-center gap-2"
-      >
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(event) => setNewMessage(event.target.value)}
-          placeholder="Type a message..."
-          aria-label="Message"
-          className="flex-1 min-w-0 border border-gray-500 text-white rounded p-2"
-        />
-
-        <button
-          type="submit"
-          disabled={!newMessage.trim()}
-          className="btn btn-secondary"
-        >
-          Send
-        </button>
-      </form>
     </div>
   );
 };
