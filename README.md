@@ -19,7 +19,7 @@
 - Add redux devtools in chrome
 - Login and see if your data is coming properly in the store
 - NavBar should update as soon as user logs in
-- Refactor our code to add constants file + create a components folder 
+- Refactor our code to add constants file + create a components folder
 - You should not be access other routes without login
 - If token is not present, redirect user to login page
 - Logout Feature
@@ -30,26 +30,26 @@
 - New Page - See all my connections
 - New Page - See all my Conenction Requests
 - Feature - Accept/Reject connection request
-- Send/Ignore the user card from the feed 
-- Signup New User 
+- Send/Ignore the user card from the feed
+- Signup New User
 - E2E testing
 
-Body 
-    NavBar
-    Route=/  => Feed
-    Route=/login  => Login
-    Route=/connetions => Connections
-    Router=/profile => Profile
+Body
+NavBar
+Route=/ => Feed
+Route=/login => Login
+Route=/connetions => Connections
+Router=/profile => Profile
 
     # Deployment
 
-    - Signup on AWS 
+    - Signup on AWS
     - Launch instance
     - chmod 400 <secret>.pem
     - ssh -i "devTinder-secret.pem" ubuntu@ec2-43-204-96-49.ap-south-1.compute.amazonaws.com
     - Install Node version 16.17.0
     - Git clone
-    - Frontend    
+    - Frontend
         - npm install  -> dependencies install
         - npm run build
         - sudo apt update
@@ -70,17 +70,17 @@ Body
         - restart nginx - sudo systemctl restart nginx
         - Modify the BASEURL in frontend project to "/api"
 
-# Ngxinx config: 
+# Ngxinx config:
 
         Frontend = http://15.206.165.64/
         Backend = http://15.206.165.64:7777/
-    
+
         Domain name = devtinder.com => 15.206.165.64
 
         Frontend = devtinder.com
         Backend = devtinder.com:7777 => devtinder.com/api
 
-        nginx config : 
+        nginx config :
 
         server_name 15.206.165.64;
 
@@ -100,7 +100,7 @@ Body
     - change the nameservers on godaddy and point it to cloudflare
     - wait for sometime till your nameservers are updated ~15 minutes
     - DNS record: A devtinder.in 15.206.165.64
-    - Enable SSL for website 
+    - Enable SSL for website
 
 # Sending Emails via SES
 
@@ -109,7 +109,7 @@ Body
     - Amazon SES: Create an Identity
     - Verify your domain name
     - Verify an email address identity
-    - Install AWS SDK - v3 
+    - Install AWS SDK - v3
     - Code Example https://github.com/awsdocs/aws-doc-sdk-examples/tree/main/javascriptv3/example_code/ses#code-examples
     - Setup SesClient
     - Access Credentials should be created in IAm under SecurityCredentials Tab
@@ -118,8 +118,8 @@ Body
     - Write code for Sending email address
     - Make the email dynamic by passing more params to the run function
 
-
 # Scheduling cron jobs in NodeJS
+
     - Installing node-cron
     - Learning about cron expressions syntax - crontab.guru
     - Schedule a job
@@ -131,9 +131,9 @@ Body
     - Make sendEmail function dynamic
     - bee-queue & bull npm packages
 
-
 # Razorpay Payment Gateway Inegration
-    - Sign up on Razorpay & complete KYC 
+
+    - Sign up on Razorpay & complete KYC
     - Cerated a UI for premium page
     - Creating an API for create order in backend
     - added my key and secret in env file
@@ -147,3 +147,20 @@ Body
     - Ref - https://razorpay.com/docs/payments/server-integration/nodejs/integration-steps/#integrate-with-razorpay-payment-gateway
     - Ref - https://razorpay.com/docs/webhooks/validate-test/
     - Ref - https://razorpay.com/docs/webhooks/payloads/payments/
+
+# Real Time Chat using Websocket(Socket.io)
+
+    - Build the UI for a chat window on /chat/:targetUserId
+    - Setup socket.io in backend
+    - npm i socket.io
+    - Setup frontend socket.io-client
+    - Initialise the chat
+    - createSocketConnection
+    - Listen to events
+    - Homework:  improve the UI
+    - Homework: Fix Security Bug - auth in web ockets
+    - Homework: Fix bug - If I'm not fried, then I should not be able to send message
+    - Homework: feat: Show Green Symbol when online???? - [last Seen 2 hours ago]
+    - Homework: Limit messages when fetching from DB
+    - Project Ideas: Tic tac toe game
+    - Project Idea 2 : Chess
