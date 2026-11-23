@@ -1,0 +1,22 @@
+.video-dialog { width: min(960px, 96vw); max-height: 95dvh; padding: 0; border: 1px solid var(--border); border-radius: 22px; background: #11291f; color: #f4f8f5; box-shadow: 0 30px 90px #0006; overflow: auto; }
+.video-dialog::backdrop { background: #07130de0; backdrop-filter: blur(8px); }
+.video-heading { display: flex; align-items: center; gap: 14px; padding: 20px; }
+.video-heading h2 { color: #f4f8f5; font-size: 22px; }
+.video-heading p { color: #b4cdbd; font-size: 13px; margin-top: 4px; }
+.video-private { margin-left: auto; font-size: 12px; color: #b4cdbd; white-space: nowrap; }
+.video-stage { position: relative; height: min(54vh, 520px); min-height: 240px; background: #091a12; }
+.video-remote { width: 100%; height: 100%; }
+.video-dialog video { display: block; width: 100%; height: 100%; object-fit: contain; }
+.video-label { position: absolute; left: 12px; bottom: 10px; padding: 4px 10px; background: #0009; border-radius: 8px; font-size: 12px; }
+.video-local { position: absolute; right: 16px; bottom: 16px; width: 24%; aspect-ratio: 4/3; background: #294c3b; border: 1px solid #91b29d; border-radius: 14px; overflow: hidden; box-shadow: 0 6px 20px #0006; }
+.video-local video { object-fit: cover; transform: scaleX(-1); }
+.video-local.camera-off video { visibility: hidden; }
+.video-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; pointer-events: none; }
+.video-placeholder .avatar-photo { width: 90px; height: 90px; font-size: 30px; }
+.video-controls { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; padding: 22px 12px 12px; }
+.video-controls .video-end { background: #b53240; border-color: #b53240; color: white; }
+.video-hint { text-align: center; padding: 0 18px 20px; font-size: 12px; color: #b4cdbd; }
+.video-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; display: flex; align-items: center; gap: 16px; width: max-content; max-width: 92vw; padding: 16px 22px; background: #173d2d; color: #fff; border-radius: 16px; box-shadow: 0 10px 40px #0003; }
+.video-toast button { font-size: 24px; padding: 0 5px; }
+.chat-video-button { margin-left: auto; flex-shrink: 0; }
+@media (max-width: 600px) { .video-heading { padding: 14px; gap: 10px; } .video-heading h2 { font-size: 18px; } .video-private { display: none; } .video-stage { height: 50dvh; } .video-local { width: 32%; right: 10px; bottom: 10px; } .video-controls { gap: 8px; } .chat-video-button { font-size: 12px; padding-inline: 10px; } }

@@ -3,6 +3,7 @@ import { BASE_URL } from "../utils/constants";
 import { useEffect, useState } from "react";
 import { EmptyState, Loading, PageHeader } from "./UI";
 import { errorMessage } from "../utils/errorMessage";
+import "./premium.css";
 export default function Premium() {
   const [premium, setPremium] = useState(null);
   const [error, setError] = useState("");
@@ -78,10 +79,20 @@ export default function Premium() {
   return (
     <div className="page-container premium-page">
       <PageHeader
-        eyebrow="MORE ROOM FOR POSSIBILITY"
-        title="Invest in your next chapter."
-        description="Make more connections and keep meaningful conversations going."
+        eyebrow="YOUR NEXT CONNECTION STARTS HERE"
+        title="More possibilities. Your pace."
+        description="Choose a little extra room to grow your developer network."
       />
+      <section className="premium-video-banner" aria-labelledby="premium-video-title">
+        <span className="premium-camera-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="3" y="6" width="12" height="12" rx="3" /><path d="m15 10 6-3v10l-6-3" /></svg>
+        </span>
+        <div>
+          <span className="premium-free-label">FREE FOR EVERY MEMBER</span>
+          <h2 id="premium-video-title">Unlimited video calls. For everyone.</h2>
+          <p>Start or answer as many calls as you like with your accepted connections. No premium membership needed.</p>
+        </div>
+      </section>
       {error && (
         <div className="error-banner" role="alert">
           {error}
@@ -114,39 +125,46 @@ export default function Premium() {
               name: "Silver",
               duration: "3 months",
               limit: "100 connection requests per day",
-              subtitle: "A little more room to explore.",
+              subtitle: "Room to meet your next collaborator.",
+              price: "300",
+              label: "A fresh start",
             },
             {
               type: "gold",
               name: "Gold",
               duration: "6 months",
               limit: "Unlimited connection requests",
-              subtitle: "Go all in on your next big possibility.",
+              subtitle: "More time to build lasting connections.",
+              price: "700",
+              label: "The longer view",
             },
           ].map((plan) => (
-            <article className={`plan-card ${plan.type}`} key={plan.type}>
-              <div className="plan-top">
-                <span className="plan-symbol">✦</span>
-                <span className="count-pill">{plan.duration}</span>
+            <article className={`membership-card membership-${plan.type}`} key={plan.type}>
+              <div className="membership-card-top">
+                <span className="membership-emblem" aria-hidden="true">{plan.type === "gold" ? "✦" : "◇"}</span>
+                <span className="membership-label">{plan.label}</span>
               </div>
               <h2>{plan.name}</h2>
-              <p className="muted">{plan.subtitle}</p>
-              <div className="panel-divider" />
+              <p className="membership-subtitle">{plan.subtitle}</p>
+              <div className="membership-price"><span>₹{plan.price}</span><span>/ {plan.duration}</span></div>
+              <p className="membership-price-note">One membership. More ways to connect.</p>
+              <div className="membership-divider" />
+              <p className="membership-includes">YOUR MEMBERSHIP INCLUDES</p>
               <ul>
                 {[
-                  "Chat with other developers",
                   plan.limit,
                   "Premium profile badge",
                   plan.duration + " of membership",
                 ].map((feature) => (
                   <li key={feature}>
-                    <span>✓</span>
+                    <span aria-hidden="true">✓</span>
                     {feature}
                   </li>
                 ))}
               </ul>
+              <div className="membership-shared"><span aria-hidden="true">∞</span><div>Unlimited chat &amp; video calls<small>Always available on free accounts, too.</small></div></div>
               <button
-                className={`btn ${plan.type === "gold" ? "btn-primary" : "btn-outline"} full-width`}
+                className={`btn ${plan.type === "gold" ? "btn-primary" : "btn-outline"} full-width membership-choose`}
                 disabled={busy !== null}
                 onClick={() => buy(plan.type)}
               >
@@ -154,8 +172,8 @@ export default function Premium() {
                   ? "Opening checkout…"
                   : "Choose " + plan.name + " →"}
               </button>
-              <p className="plan-note">
-                View the price in secure checkout before paying.
+              <p className="membership-checkout-note">
+                Secure checkout with Razorpay. Confirm the total before paying.
               </p>
             </article>
           ))}

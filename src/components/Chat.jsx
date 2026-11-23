@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { createSocketConnection } from "../utils/socket";
+import { useVideoCall } from "../utils/videoContext";
 import { useSelector } from "react-redux";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
@@ -19,12 +19,10 @@ const Chat = () => {
   const [loaded, setLoaded] = useState(false);
   const bottomRef = useRef(null);
 
-  const socketRef = useRef(null);
+  const { socket, controller, state: callState } = useVideoCall();
 
   const user = useSelector((store) => store.user);
   const userId = user?._id;
-  const firstName = user?.firstName;
-  const lastName = user?.lastName;
 
   // Fetch saved messages.
   useEffect(() => {
@@ -65,15 +63,12 @@ const Chat = () => {
   useEffect(() => {
     if (!userId || !targetUserId) return;
 
-    const socket = createSocketConnection();
-    socketRef.current = socket;
-
+    let active = true;
     const joinChat = () => {
-      setConnected(true);
-      socket.emit("joinChat", {
-        firstName,
-        userId,
-        targetUserId,
+      socket.timeout(8000).emit("joinChat", { targetUserId }, (err, result) => {
+        if (!active) return;
+        setConnected(!err && Boolean(result?.ok));
+        if (err || !result?.ok) setError(result?.error || "Unable to join chat.");
       });
     };
 
@@ -95,17 +90,14 @@ const Chat = () => {
     }
 
     return () => {
+      active = false;
       socket.off("connect", joinChat);
       socket.off("disconnect", disconnected);
       socket.off("connect_error", disconnected);
       socket.off("messageReceived", receiveMessage);
-      socket.disconnect();
-
-      if (socketRef.current === socket) {
-        socketRef.current = null;
-      }
+      if (socket.connected) socket.emit("leaveChat");
     };
-  }, [userId, targetUserId, firstName]);
+  }, [userId, targetUserId, socket]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
@@ -115,19 +107,13 @@ const Chat = () => {
     event.preventDefault();
 
     const text = newMessage.trim();
-    const socket = socketRef.current;
 
     if (!text || !userId || !socket?.connected) return;
 
-    socket.emit("sendMessage", {
-      firstName,
-      lastName,
-      userId,
-      targetUserId,
-      text,
+    socket.timeout(8000).emit("sendMessage", { targetUserId, text }, (err, result) => {
+      if (err || !result?.ok) setError(result?.error || "Message delivery could not be confirmed. Check the conversation before retrying.");
+      else { setError(""); setNewMessage((current) => current.trim() === text ? "" : current); }
     });
-
-    setNewMessage("");
   };
 
   if (!userId) {
@@ -156,6 +142,8 @@ const Chat = () => {
               {connected ? "Connected to chat" : "Connecting to chat…"}
             </p>
           </div>
+          <button className="btn btn-primary chat-video-button" disabled={!connected || !callState.online || Boolean(callState.call)}
+            onClick={() => controller.start(targetUserId, person)} aria-label="Start video call">Video call</button>
         </header>
         {error && (
           <p className="chat-notice" role="alert">
@@ -214,4 +202,7 @@ const Chat = () => {
   );
 };
 
-export default Chat;
+export default function ChatRoute() {
+  const { targetUserId } = useParams();
+  return <Chat key={targetUserId} />;
+}

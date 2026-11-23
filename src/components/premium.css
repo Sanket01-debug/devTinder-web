@@ -1,0 +1,49 @@
+.premium-video-banner {
+  display: flex; align-items: center; gap: 20px; padding: 24px 28px;
+  margin-bottom: 30px; border: 1px solid #c8dfd2; border-radius: 18px;
+  background: linear-gradient(110deg, #ecf6ef, #f5f9ef);
+}
+.premium-camera-icon { display: grid; place-items: center; flex-shrink: 0; width: 54px; height: 54px; border-radius: 16px; background: #d9ecdf; color: #176b50; }
+.premium-camera-icon svg { width: 28px; height: 28px; }
+.premium-free-label { display: block; color: #176b50; font-size: 10px; letter-spacing: 1.4px; font-weight: 750; margin-bottom: 6px; }
+.premium-video-banner h2 { font-size: 20px; letter-spacing: -.5px; }
+.premium-video-banner p { color: var(--muted); font-size: 13px; line-height: 1.7; margin-top: 6px; max-width: 650px; }
+.membership-card { --plan-accent: #3b6655; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 32px; background: #fff; border: 1px solid var(--border); border-radius: 22px; box-shadow: 0 8px 24px #203b3005; }
+.membership-card::before { content: ""; position: absolute; inset: 0 0 auto; height: 3px; background: linear-gradient(90deg, transparent, #a9c2b4, transparent); }
+.membership-gold { --plan-accent: #89672c; background: linear-gradient(145deg, #fffdf5, #f5f5e9); border-color: #d8c69b; }
+.membership-gold::before { background: linear-gradient(90deg, #b89752, #f0d9a0, #b89752); }
+.membership-card-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
+.membership-emblem { display: grid; place-items: center; width: 44px; height: 44px; font-size: 29px; color: var(--plan-accent); border: 1px solid #dce5de; border-radius: 13px; background: #f1f5f1; }
+.membership-gold .membership-emblem { background: #f4ebd2; border-color: #e3d3ac; }
+.membership-label { color: var(--plan-accent); font-size: 10px; font-weight: 650; letter-spacing: 1.2px; text-transform: uppercase; }
+.membership-card h2 { font-size: 30px; letter-spacing: -1px; margin-bottom: 7px; }
+.membership-subtitle { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.membership-price { display: flex; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-top: 27px; }
+.membership-price > span:first-child { font-size: 43px; line-height: 1.2; font-weight: 650; letter-spacing: -2px; }
+.membership-price > span:last-child { color: var(--muted); font-size: 13px; }
+.membership-price-note { margin-top: 7px; color: var(--muted); font-size: 11px; }
+.membership-divider { height: 1px; background: var(--border); margin: 25px 0; }
+.membership-includes { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 1.4px; margin-bottom: 18px; }
+.membership-card ul { list-style: none; display: grid; gap: 17px; margin: 0; padding: 0; font-size: 13px; line-height: 1.5; }
+.membership-card li { display: flex; gap: 12px; }
+.membership-card li > span { color: var(--green); }
+.membership-shared { display: flex; align-items: center; gap: 12px; padding: 16px 0; margin: 18px 0 20px; border-top: 1px dashed var(--border); font-size: 12px; }
+.membership-shared > span { font-size: 27px; color: var(--plan-accent); }
+.membership-shared small { display: block; color: var(--muted); font-size: 10px; margin-top: 4px; }
+.membership-choose { margin-top: auto; min-height: 48px; }
+.membership-checkout-note { text-align: center; color: var(--muted); font-size: 10px; line-height: 1.7; margin-top: 13px; }
+:root[data-theme="dark"] .premium-video-banner { background: linear-gradient(110deg, #192e24, #1c2b20); border-color: #355a45; }
+:root[data-theme="dark"] .premium-camera-icon { color: #a9dec0; background: #254735; }
+:root[data-theme="dark"] .premium-free-label { color: #a9dec0; }
+:root[data-theme="dark"] .membership-card { --plan-accent: #b9cfbf; background: #192820; border-color: #344e3e; }
+:root[data-theme="dark"] .membership-gold { --plan-accent: #e2c787; background: linear-gradient(145deg, #293323, #202b20); border-color: #736540; }
+:root[data-theme="dark"] .membership-emblem { background: #25392d; border-color: #3e5546; }
+:root[data-theme="dark"] .membership-gold .membership-emblem { background: #393d26; border-color: #685e3d; }
+@media (max-width: 600px) {
+  .premium-video-banner { padding: 20px; gap: 14px; align-items: flex-start; }
+  .premium-camera-icon { width: 40px; height: 40px; border-radius: 12px; }
+  .premium-camera-icon svg { width: 22px; height: 22px; }
+  .premium-video-banner h2 { font-size: 18px; line-height: 1.4; }
+  .membership-card { padding: 26px; }
+  .membership-price > span:first-child { font-size: 38px; }
+}

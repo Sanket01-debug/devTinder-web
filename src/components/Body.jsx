@@ -1,6 +1,7 @@
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
+import VideoProvider from "./VideoProvider";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
@@ -33,7 +34,7 @@ export default function Body() {
   }, [user, dispatch, navigate, retry]);
   const publicPage = location.pathname === "/login";
   return (
-    <div className="app-shell">
+    <VideoProvider key={user?._id || "guest"} user={user}><div className="app-shell">
       <NavBar />
       <main className="app-main">
         {user || publicPage ? (
@@ -57,6 +58,6 @@ export default function Body() {
         )}
       </main>
       <Footer />
-    </div>
+    </div></VideoProvider>
   );
 }
